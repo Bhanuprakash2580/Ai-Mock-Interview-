@@ -53,7 +53,9 @@ function LoginPage() {
       navigate('/');
     } catch (error) {
       const message =
-        error.response?.data?.message || 'Something went wrong';
+        error.userMessage ||
+        error.response?.data?.message ||
+        'Something went wrong';
       toast.error(message);
     } finally {
       setLoading(false);

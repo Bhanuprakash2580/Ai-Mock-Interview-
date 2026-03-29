@@ -28,6 +28,7 @@ const resolveApiBaseUrl = () => {
 
 const API = axios.create({
   baseURL: resolveApiBaseUrl(),
+  timeout: 15000,
 });
 
 // Attach JWT token to every request
@@ -38,5 +39,20 @@ API.interceptors.request.use((config) => {
   }
   return config;
 });
+
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ECONNABORTED') {
+      error.userMessage =
+        'The server took too long to respond. If the backend is hosted on Render, it may be waking up. Please try again in a few seconds.';
+    } else if (!error.response) {
+      error.userMessage =
+        'Unable to reach the server. Please check the deployed backend URL and try again.';
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default API;
