@@ -7,8 +7,18 @@
 
 import mongoose from 'mongoose';
 
+let connectionPromise = null;
+
 const connectDB = async () => {
   try {
+    if (mongoose.connection.readyState === 1) {
+      return mongoose.connection;
+    }
+
+    if (connectionPromise) {
+      return connectionPromise;
+    }
+
     // Get the connection string from environment variables
     const mongoURI = process.env.MONGODB_URI;
 
@@ -19,12 +29,15 @@ const connectDB = async () => {
 
     // Connect to MongoDB
     // Mongoose 9.x handles connection options automatically
-    const conn = await mongoose.connect(mongoURI);
+    connectionPromise = mongoose.connect(mongoURI);
+    const conn = await connectionPromise;
 
     console.error(`MongoDB Connected: ${conn.connection.host}`);
+    return conn.connection;
   } catch (error) {
+    connectionPromise = null;
     console.error(`MongoDB Connection Error: ${error.message}`);
-    process.exit(1); // Stop the server if DB connection fails
+    throw error;
   }
 };
 

@@ -35,7 +35,10 @@ const allowedOrigins = new Set([
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) {
+      const isTrustedVercelOrigin =
+        typeof origin === 'string' && origin.endsWith('.vercel.app');
+
+      if (!origin || allowedOrigins.has(origin) || isTrustedVercelOrigin) {
         return callback(null, true);
       }
 
